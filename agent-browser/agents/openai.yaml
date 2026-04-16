@@ -1,0 +1,7 @@
+interface:
+  display_name: "Agent Browser"
+  short_description: "GenericAgent-style browser automation through zero-plugin Chrome CDP scripts"
+  default_prompt: "Use $agent-browser to solve this browser task strictly with the zero-plugin Chrome CDP workflow, and tell me first whether Chrome must be relaunched with remote debugging."
+
+policy:
+  allow_implicit_invocation: true

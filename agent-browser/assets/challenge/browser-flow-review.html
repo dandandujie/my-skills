@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mission Review Pending</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.22), transparent 32%),
+        linear-gradient(160deg, #0f172a, #111827);
+    }
+    main {
+      width: min(680px, calc(100vw - 48px));
+      padding: 30px;
+      border-radius: 24px;
+      background: rgba(15, 23, 42, 0.78);
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.42);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      backdrop-filter: blur(14px);
+    }
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+    dl {
+      display: grid;
+      gap: 16px;
+      margin: 0 0 24px;
+    }
+    dt {
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+    dd {
+      margin: 4px 0 0;
+      color: #f8fafc;
+      font-size: 1.05rem;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 13px 20px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: #f59e0b;
+      color: #1f2937;
+    }
+    #result {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(30, 41, 59, 0.92);
+      color: #cbd5e1;
+      min-height: 24px;
+    }
+    #result[data-state="done"] {
+      background: rgba(20, 83, 45, 0.9);
+      color: #dcfce7;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 id="headline">Review Pending</h1>
+    <dl>
+      <div>
+        <dt>Codename</dt>
+        <dd id="codename">Missing</dd>
+      </div>
+      <div>
+        <dt>Mission Note</dt>
+        <dd id="mission">Missing</dd>
+      </div>
+      <div>
+        <dt>Briefing File</dt>
+        <dd id="briefing">Missing</dd>
+      </div>
+      <div>
+        <dt>Checklist</dt>
+        <dd id="checklist">Incomplete</dd>
+      </div>
+    </dl>
+
+    <button id="finalize" type="button">Finalize Mission Packet</button>
+    <div id="result" data-state="idle">Waiting for operator confirmation.</div>
+  </main>
+
+  <script>
+    function readPayload() {
+      const hash = new URLSearchParams(location.hash.slice(1));
+      const encoded = hash.get("payload");
+      if (!encoded) return null;
+      try {
+        return JSON.parse(decodeURIComponent(encoded));
+      } catch {
+        return null;
+      }
+    }
+
+    const payload = readPayload();
+    if (payload) {
+      document.getElementById("codename").textContent = payload.codename || "Missing";
+      document.getElementById("mission").textContent = payload.mission || "Missing";
+      document.getElementById("briefing").textContent = payload.briefing || "Missing";
+      document.getElementById("checklist").textContent = payload.confirmed ? "Confirmed" : "Incomplete";
+    }
+
+    document.getElementById("finalize").addEventListener("click", () => {
+      const ok = Boolean(payload?.codename && payload?.mission && payload?.briefing && payload?.confirmed);
+      const result = document.getElementById("result");
+      if (!ok) {
+        result.dataset.state = "idle";
+        result.textContent = "Payload is incomplete. Return to the original tab.";
+        return;
+      }
+      result.dataset.state = "done";
+      result.textContent = `Mission packet accepted for ${payload.codename}.`;
+      document.getElementById("headline").textContent = "Mission Review Complete";
+      document.title = "Mission Review Complete";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+Aurora Vector briefing
+Priority: amber
+Objective: verify zero-plugin CDP browser automation across one main tab and one review tab.

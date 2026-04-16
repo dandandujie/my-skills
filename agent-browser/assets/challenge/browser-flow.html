@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Browser Challenge</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f2ea;
+      color: #1c1917;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at top left, rgba(251, 191, 36, 0.18), transparent 36%),
+        linear-gradient(135deg, #f5f2ea, #efe7d7);
+    }
+    main {
+      width: min(720px, calc(100vw - 48px));
+      padding: 28px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: 0 24px 60px rgba(28, 25, 23, 0.12);
+      backdrop-filter: blur(12px);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1;
+    }
+    p {
+      margin: 0 0 20px;
+      color: #57534e;
+    }
+    .grid {
+      display: grid;
+      gap: 18px;
+    }
+    label {
+      display: grid;
+      gap: 8px;
+      font-weight: 600;
+      color: #292524;
+    }
+    input[type="text"],
+    textarea {
+      width: 100%;
+      border: 1px solid #d6d3d1;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font: inherit;
+      box-sizing: border-box;
+      background: #fff;
+    }
+    textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+    .upload-row,
+    .confirm-row,
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .chip,
+    .status {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: #f5f5f4;
+      color: #44403c;
+      font-size: 0.95rem;
+    }
+    .status[data-state="ready"] {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .status[data-state="blocked"] {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    button,
+    .button-like {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: #1d4ed8;
+      color: #fff;
+      transition: transform 0.12s ease, opacity 0.12s ease;
+    }
+    button.secondary,
+    .button-like {
+      background: #e7e5e4;
+      color: #1c1917;
+    }
+    button:hover,
+    .button-like:hover {
+      transform: translateY(-1px);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+    #packet {
+      border-radius: 16px;
+      background: #111827;
+      color: #f9fafb;
+      padding: 16px;
+      margin-top: 18px;
+      font-family: ui-monospace, SFMono-Regular, SFMono-Regular, Menlo, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Mission Review</h1>
+    <p>Fill the fields, upload the briefing, and open a review tab. The challenge is complete only when the review tab shows the matching payload.</p>
+
+    <section class="grid">
+      <label>
+        Codename
+        <input id="codename" name="codename" type="text" autocomplete="off" placeholder="Aurora Vector">
+      </label>
+
+      <label>
+        Mission Note
+        <textarea id="mission" name="mission" placeholder="Summarize the objective in one sentence."></textarea>
+      </label>
+
+      <div class="upload-row">
+        <label class="button-like" for="briefing">Choose Briefing</label>
+        <input id="briefing" name="briefing" type="file" hidden>
+        <div id="file-chip" class="chip">No file attached</div>
+      </div>
+
+      <div class="confirm-row">
+        <input id="ack" name="ack" type="checkbox">
+        <label for="ack">I confirm this mission is ready for review.</label>
+      </div>
+
+      <div class="actions">
+        <button id="open-review" type="button">Open Review Tab</button>
+        <div id="status" class="status" data-state="blocked">Waiting for complete payload</div>
+      </div>
+    </section>
+
+    <pre id="packet">payload: pending</pre>
+  </main>
+
+  <script>
+    const codename = document.getElementById('codename');
+    const mission = document.getElementById('mission');
+    const briefing = document.getElementById('briefing');
+    const ack = document.getElementById('ack');
+    const openReview = document.getElementById('open-review');
+    const status = document.getElementById('status');
+    const fileChip = document.getElementById('file-chip');
+    const packet = document.getElementById('packet');
+
+    function buildPayload() {
+      return {
+        codename: codename.value.trim(),
+        mission: mission.value.trim(),
+        briefing: briefing.files[0]?.name || "",
+        confirmed: ack.checked
+      };
+    }
+
+    function render() {
+      const payload = buildPayload();
+      const ready = Boolean(payload.codename && payload.mission && payload.briefing && payload.confirmed);
+
+      fileChip.textContent = payload.briefing || "No file attached";
+      openReview.disabled = !ready;
+      status.dataset.state = ready ? "ready" : "blocked";
+      status.textContent = ready ? "Payload ready for review" : "Waiting for complete payload";
+      packet.textContent = "payload: " + JSON.stringify(payload, null, 2);
+    }
+
+    function openReviewTab() {
+      const payload = buildPayload();
+      const encoded = encodeURIComponent(JSON.stringify(payload));
+      window.open(`browser-flow-review.html#payload=${encoded}`, "_blank", "noopener");
+    }
+
+    [codename, mission, ack, briefing].forEach((el) => {
+      el.addEventListener("input", render);
+      el.addEventListener("change", render);
+    });
+    openReview.addEventListener("click", openReviewTab);
+    render();
+  </script>
+</body>
+</html>
