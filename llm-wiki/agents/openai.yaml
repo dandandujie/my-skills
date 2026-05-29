@@ -1,0 +1,4 @@
+interface:
+  display_name: "LLM Wiki"
+  short_description: "把 AGENTS/CLAUDE 变成自进化知识库路由"
+  default_prompt: "Use $llm-wiki to initialize a new project wiki or audit an existing project before appending AGENTS/CLAUDE router blocks."
