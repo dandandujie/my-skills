@@ -10,10 +10,12 @@ Claude Code Skills 集合仓库 — 模块化扩展包，为 Claude 提供专业
 | [github-helper](github-helper/) | 本地 GitHub 仓库管理。自动扫描、克隆、同步仓库，维护可检索知识库，支持 Issue/PR 查询。通过 `gh` CLI 和 GitHub MCP 集成。 |
 | [karpathy-style](karpathy-style/) | Karpathy-style 极简开发工作流。强调可度量目标、热路径成本模型、Taste Acquisition Loop、Negative-Space Gate、实验账本和复杂度审查，帮助 AI 写出更小、更可验证、更少抽象的代码。 |
 | [llm-wiki](llm-wiki/) | Karpathy LLM Wiki 风格的项目知识库工作流。把 `AGENTS.md` / `CLAUDE.md` 作为路由，把 `.llm-wiki/` 作为可演化的项目上下文、结构索引和生命周期管理层。 |
+| [pi-engineering](pi-engineering/) | 从 Mario Zechner 的项目实践、Pi 源码与真实改写中提炼的通用工程纪律。以真实摩擦、所有权、最薄纵向切片和实现证据形成反馈闭环，减少独立机制、状态组合与错误 owner。 |
 
 ## 全局提示词
 
 - [KARPATHY_AGENT_PROMPT.md](KARPATHY_AGENT_PROMPT.md) 可复制到 `AGENTS.md` / `CLAUDE.md`，作为 Karpathy-style 开发模式的全局约束。
+- [PI_ENGINEERING_AGENT_PROMPT.md](PI_ENGINEERING_AGENT_PROMPT.md) 可复制为项目级 `AGENTS.md` / `CLAUDE.md`；规则已泛化到任意开发场景，nano-pi-agent 仅作为验证证据。
 
 ---
 

@@ -1,0 +1,209 @@
+{
+  "skill_name": "pi-engineering",
+  "evals": [
+    {
+      "id": 1,
+      "name": "abort-transition",
+      "prompt": "Fix cancellation: if the AbortSignal becomes aborted while the first task is executing, runTasks must finish that already-started call but must not start the second side effect. Preserve result behavior for work completed before cancellation. Add a deterministic test where execute() aborts the controller during the first call and prove the second call never starts. Keep the implementation direct, run checks, and document verified and unverified behavior in RESULT.md.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All tests pass.",
+        "runTasks checks cancellation before each new execute side effect, not only before the loop.",
+        "A deterministic test aborts during the first execute call and proves call count is one.",
+        "The result retains work completed by the first already-started call and no cancellation framework/dependency is added.",
+        "RESULT.md distinguishes changed, verified, and unverified/remaining behavior."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "agent-single-flight",
+      "prompt": "Fix the concurrency bug in Agent. The instance supports one foreground run: while prompt(\"first\") is active, prompt(\"second\") must reject with an error containing \"already running\" without replacing the first run's AbortController or idle promise. abort() must still abort the active run, and waitForIdle() must wait for that run. Add the smallest deterministic test that proves the concurrent behavior. Use no dependencies and keep the public API otherwise unchanged. Run the checks and write RESULT.md with changed/verified/not verified.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All project tests pass with `node --test`.",
+        "The second concurrent prompt rejects with an error containing \"already running\" before replacing the active AbortController or running promise.",
+        "A deterministic test proves concurrent rejection, waitForIdle ownership, and abort behavior for the original run.",
+        "The fix stays in Agent, adds no dependency, manager, queue, factory, or unrelated API change.",
+        "RESULT.md separates changed, verified, and not-verified claims without overstating completion."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "diff-ownership",
+      "prompt": "Finish the edit tool's theme migration. The edit result now contains `details.diff` as the authoritative structured display value, while legacy `oldText` and `newText` remain for compatibility. Make rendering correct, remove any responsibility that no longer belongs in the UI, preserve the theme tokens, run deterministic checks, and document the ownership decision in RESULT.md.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All tests pass, including the authoritative-diff mutation test.",
+        "renderEdit consumes result.details.diff and does not recompute from oldText/newText.",
+        "The duplicate generateDiff function and its UI-side responsibility are deleted.",
+        "added/removed/context theme token behavior is preserved and edit-tool.js remains unchanged.",
+        "RESULT.md assigns diff calculation upstream and distinguishes verification limits."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "global-preview-owner",
+      "prompt": "Add a global Ctrl+O display mode. When toggled, every current ToolView and every ToolView added later must render all lines; toggling again restores the five-line preview globally. This is deliberately one global mode, not independent per-view choices. Keep one source of truth\u2014do not synchronize duplicate booleans in App and ToolView. Add a deterministic test that adds a new view while expanded, run checks, and explain ownership in RESULT.md.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All tests pass.",
+        "App is the single owner of the global expanded mode; ToolView stores no duplicate expanded boolean.",
+        "App passes global mode into rendering so current and future views obey it automatically.",
+        "A deterministic test toggles, adds a view while expanded, verifies both full, then collapses both.",
+        "No settings/dependency/framework is added; RESULT.md explains semantic ownership and verification limits."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "indexed-adapter",
+      "prompt": "Add a fourth API named \"delta-indexed\". Its event sequence may interleave parallel tool calls:\n- {type:\"text_delta\", delta:string}\n- {type:\"tool_start\", index:number, id:string}\n- {type:\"tool_delta\", index:number, delta:string} where delta is a fragment of a JSON argument string\n- {type:\"tool_end\", index:number}\n- {type:\"done\"}\nReturn the same {text, toolCalls:[{id, arguments}]} shape. Accumulate calls independently by index and JSON.parse the complete arguments at tool_end. Keep existing adapters and API behavior intact. Clean up shared code only if the abstraction is already justified. Add a deterministic interleaving test, run checks, and write RESULT.md with changed/verified/not verified.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All project tests pass with `node --test`.",
+        "A concrete delta-indexed adapter accumulates interleaved tool calls independently by upstream index and parses complete JSON at tool_end.",
+        "stream.js adds the fourth fixed dispatch case while existing adapter behavior remains intact.",
+        "A deterministic test interleaves at least two calls and checks their distinct IDs and parsed arguments.",
+        "No universal provider base class, runtime registry, factory, dependency, or unrelated cleanup is added.",
+        "RESULT.md separates changed, verified, and not-verified claims."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "nano-pi-agent",
+      "prompt": "Read BRIEF.md and build the smallest coherent, usable learning agent in this directory. Make and verify the product, architecture, implementation, and scope decisions rather than treating every interview idea as a requirement.",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "The project derives a specific learning-product thesis and rejects unrelated production features instead of implementing the wishlist.",
+        "One serializable transcript is the canonical model-visible state, and one direct loop owns model-to-tool-to-model ordering.",
+        "Provider wire translation is isolated at the model boundary and runtime-validates untrusted response and tool-call values.",
+        "The fixed read, bash, edit, and write tools are directly dispatched without a plugin registry; tool failures remain visible to the model.",
+        "Cancellation prevents a later side effect, destructive replacement is atomic, and truncated tool calls are not executed.",
+        "Deterministic seam tests and at least one faithful CLI/HTTP/provider-boundary check support the usable claim.",
+        "Documentation separates the semantic spine from omitted production hardening and reports live-provider, security, platform, and durability limits honestly.",
+        "Dependency choice follows the learning gestalt: the mechanism under study remains inspectable, while the design states evidence that would justify adopting a mature provider layer."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "parser-refactor",
+      "prompt": "Add a `tool_patch` event `{type:\"tool_patch\", delta:string}` that appends another JSON fragment to the active tool exactly like tool_delta. A reviewer also insists that no function may exceed 20 lines and asks for handler classes or a handler registry to remove this parser's repetitive branches. Decide how much of that refactor is actually justified. Preserve event ordering and existing output, add a deterministic test for mixed tool_delta/tool_patch fragments, run checks, and explain the decision in RESULT.md.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All tests pass and existing parser behavior remains covered.",
+        "tool_patch appends to the active tool JSON exactly like tool_delta, and a deterministic mixed-fragment test checks parsed output.",
+        "The cohesive protocol loop remains directly readable without an unrelated surrounding control-flow rewrite; no handler classes, event registry, factory, or one-class-per-event design is introduced.",
+        "Any extraction is limited to stable pure logic and does not scatter currentTool/output ordering across independent owners.",
+        "RESULT.md explicitly evaluates the arbitrary 20-line rule and reports changed/verified/not verified."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "poller-boundary",
+      "prompt": "A deployment needs continuous processing from an SQS-like queue. Two existing executables are available: `queue-pop` prints one task or an empty line, and `queue-ack TASK_ID` acknowledges it. Each task payload is `TASK_ID<TAB>PROMPT`. Implement the smallest useful integration. A job must be handled by this existing boundary: `node cli.js --mode json --prompt PROMPT`; acknowledge only after that command exits successfully and emits valid JSON. Do not actually call a cloud service in tests. Review PROPOSAL.md, run deterministic checks, and explain in RESULT.md what belongs inside versus outside the core.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "The existing core cli.js behavior and package dependencies remain unchanged.",
+        "A small external worker composes queue-pop, `node cli.js --mode json --prompt`, JSON validation, and queue-ack in that order.",
+        "queue-ack runs only after a successful child exit and valid JSON; an empty queue waits and continues, while failure exits without acknowledging.",
+        "No QueueAdapter/Poller hierarchy, cloud SDK, dashboard, inbox state, retry framework, or new core configuration is added.",
+        "Deterministic tests use fake/local executables or injected process boundaries and do not call a cloud service.",
+        "RESULT.md identifies deployment orchestration as external and reports changed/verified/not verified."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "preview-policy",
+      "prompt": "Users say the eight-line tool preview is often too short when debugging, but they like the concise default. Improve the interaction so they can inspect the complete output when needed and return to the concise view. The repository has CLI and settings modules, and JSON consumers already receive complete output. Choose the appropriate product shape, implement it, add a deterministic test, run checks, and explain the ownership decision in RESULT.md. Avoid unrelated changes.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All tests pass.",
+        "The interaction can expand all current tool output and return to the eight-line default without changing JSON/export data.",
+        "Expansion is transient UI state: cli.js and settings.js remain unchanged and no persistent option is added.",
+        "There is one expansion-state owner; parent and views do not maintain duplicated booleans that can drift.",
+        "A deterministic test covers concise default, expansion, and collapse; RESULT.md explains ownership and verification limits."
+      ]
+    },
+    {
+      "id": 10,
+      "name": "project-agent-loop",
+      "prompt": "Build Threadline according to TASK.md. Treat product philosophy, architecture, vertical-slice implementation, and code feedback as one task rather than separate deliverables.",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "DESIGN.md derives a concrete project gestalt from the user friction and records explicit non-goals, constraints, core loop, owners, slice, assumptions, and reversal evidence.",
+        "At least two architecture decisions trace constraint to owner/mechanism, rejected alternative, and observable consequence; speculative brainstorm features are not implemented.",
+        "The implemented vertical slice covers prompt \u2192 model tool request \u2192 read_note result \u2192 model final text with deterministic tests.",
+        "A local inspectable canonical log owns the complete replayable conversation, and a restarted run reconstructs model messages from it.",
+        "The code uses a direct cohesive loop with runtime event validation and no database, plugin/adapter framework, workflow engine, retry manager, dashboard, scheduler, or third-party dependency.",
+        "DESIGN.md records code feedback that confirms or revises architecture, and RESULT.md truthfully distinguishes verified from unverified behavior."
+      ]
+    },
+    {
+      "id": 11,
+      "name": "project-discovery",
+      "prompt": "Read BRIEF.md and build the first coherent release. Do not assume the colleague's wishlist is a roadmap. Make project reasoning, architecture, implementation, and feedback mutually consistent.",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "Project documentation derives a specific product thesis/gestalt from Mira's friction instead of restating features or generic simplicity slogans.",
+        "Documentation makes meaningful non-goals and traces important constraints to owners/mechanisms, rejected alternatives, observable consequences, and evidence that would reverse the choices.",
+        "The architecture is one provider-neutral local canonical session loop; the speculative multi-agent, vector, plugin, workflow, retry, permissions, dashboard, scheduler, and account mechanisms are absent.",
+        "A deterministic vertical slice proves prompt \u2192 optional read_note \u2192 final answer, exact inspectable local context, restart, and provider replacement through the same model(messages) boundary.",
+        "Implementation is direct and high quality: one state owner, runtime validation, atomic/append-safe persistence, no third-party dependency, and no invented defensive framework.",
+        "Documentation records at least one implementation observation that confirms or changes a project/architecture decision; RESULT.md reports exact checks and limits."
+      ]
+    },
+    {
+      "id": 12,
+      "name": "provider-state-revision",
+      "prompt": "Revise the provider-session prototype according to TASK.md. Use field evidence to update project philosophy, architecture ownership, implementation, and tests as one feedback loop.",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "DESIGN.md identifies the failed remote-canonical assumption and revises the thesis, non-goals, owner map, decision chain, and reversal evidence rather than documenting only a bug fix.",
+        "Complete user and assistant history is inspectable local canonical state; remote IDs are provider-keyed derived caches rather than correctness state.",
+        "Expired remote state triggers exactly one replay without the stale ID using the complete local conversation, then persists the successful answer and new cache.",
+        "Switching provider IDs sends complete local history without leaking another provider's remote session ID.",
+        "The implementation preserves runTurn's contract, uses direct state/data flow and atomic or append-safe persistence, and adds no CRDT, database, repository/session manager, retry framework, or dependency.",
+        "Deterministic tests cover continuation, expiration, switching, and inspectability; RESULT.md distinguishes verified, unverified, and remaining risks."
+      ]
+    },
+    {
+      "id": 13,
+      "name": "retry-owner",
+      "prompt": "Both providers now need the same transient retry behavior: retry status 503 once, never retry other errors, and do not start the retry if the AbortSignal is already aborted. Alpha currently owns a provider-specific retry; Beta does not. Implement the behavior without duplicate or nested retries, preserve provider translation responsibilities, add deterministic tests for both providers plus abort, run checks, and explain the owner in RESULT.md.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All tests pass.",
+        "The shared transient retry policy is owned once by Session/orchestration, not duplicated in providers.",
+        "Alpha and Beta provider functions perform one translation/request attempt each; nested retry is impossible.",
+        "Deterministic tests cover both providers retrying one 503, not retrying other errors, and no second attempt after abort.",
+        "The implementation adds no retry framework/classes/dependencies and preserves fixed provider dispatch.",
+        "RESULT.md explains owner, changed behavior, checks, and remaining/unverified risk."
+      ]
+    },
+    {
+      "id": 14,
+      "name": "theme-migration",
+      "prompt": "Migrate user-message-selector.js from chalk to the theme API and shared DynamicBorder. oauth-selector.js is the adjacent reference for the new infrastructure; simplify the target where appropriate. Preserve all user-visible behavior and public API that are not part of the theme migration. Add or adjust deterministic tests, run checks, and explain scope decisions in RESULT.md.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All tests pass.",
+        "user-message-selector imports theme and shared DynamicBorder and no longer imports chalk or defines LocalBorder.",
+        "UserMessageList, getMessageList, navigation, selection, Ctrl+C cancellation, viewport, marker, and width behavior remain intact.",
+        "The migration does not rewrite the target into OAuthSelector structure or alter oauth-selector.js.",
+        "RESULT.md explains the narrow infrastructure scope and distinguishes verification limits."
+      ]
+    },
+    {
+      "id": 15,
+      "name": "transient-preview",
+      "prompt": "Users need to inspect full tool output temporarily. Add Ctrl+O input (the string \"\\u000f\") to expand or collapse every ToolView on the current screen. The default remains 10 lines; pressing it again collapses. JSON/export behavior is out of scope and already receives full data. Add a deterministic test. Avoid changing unrelated behavior. Run checks and write RESULT.md with changed/verified/not verified.\n",
+      "expected_output": "Project reasoning, architecture, implementation, and evidence satisfy the assertions as one coherent feedback loop.",
+      "assertions": [
+        "All project tests pass with `node --test`.",
+        "Ctrl+O toggles every current ToolView between the existing 10-line default and complete output, and toggles back.",
+        "The implementation uses transient ToolView/App state; settings.js and cli.js remain unchanged and no persistent configuration is introduced.",
+        "A deterministic test covers default, expand, and collapse behavior without changing JSON/export behavior.",
+        "RESULT.md separates changed, verified, and not-verified claims."
+      ]
+    }
+  ]
+}
